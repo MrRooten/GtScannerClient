@@ -63,7 +63,6 @@ def yellow(msf):
 def get_random_str():
     return md5(str(random.randint())).hexdigest()
 
-
 class SocketClient:
     def __init__(self, port):
         self.port = port
@@ -146,8 +145,33 @@ class Cmdline(cmd.Cmd):
     def help_init_config(self, args):
         pass
 
-    def do_read_config(self, args):
+    def do_save_config(self,args):
+        msgObj = dict()
+        msgObj["action"] = "read_config"
+        msgObj["value_type"] = "none"
+        self.client.send(msgObj)
+        json_str = self.client.recv()
+        parsed_json = json.loads(json_str)
+        with open("config_save.json", "w") as f:
+            f.write(parsed_json)
+
+    def help_save_config(self):
+        print("Save the config that you configure in this session")
+
+    def do_help_config(self,args):
         pass
+
+    def help_help_config(self):
+        pass
+
+    def do_read_config(self, args):
+        msgObj = dict()
+        msgObj["action"] = "read_config"
+        msgObj["value_type"] = "none"
+        self.client.send(msgObj)
+        json_str = self.client.recv()
+        parsed_json = json.loads(json_str)
+        print(json.dumps(parsed_json,indent=4))
 
     def help_read_config(self, args):
         pass

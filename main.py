@@ -165,7 +165,11 @@ class Cmdline(cmd.Cmd):
         pass
 
     def do_list_running_pocs(self, args):
-        pass
+        msgObj = dict()
+        msgObj["action"] = "list_running_pocs"
+        msgObj["value_type"] = "none"
+        self.client.send(msgObj)
+        print(self.client.recv())
 
     def help_list_running_pocs(self, args):
         pass

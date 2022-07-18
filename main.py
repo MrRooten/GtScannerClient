@@ -4,7 +4,7 @@ import cmd
 from ctypes import *
 from hashlib import md5
 import random
-import configparser
+
 
 
 def print_options(options: dict):
@@ -64,16 +64,20 @@ def get_random_str():
     return md5(str(random.randint())).hexdigest()
 
 class SocketClient:
-    def __init__(self, port):
+    def __init__(self, ip, port):
         self.port = port
+        self.ip = ip
         self.server = socket.socket()
-        self.server.connect(("10.70.42.214", self.port))
+        self.server.connect((self.ip, self.port))
 
     def send(self, msgObj: dict):
         self.server.send(json.dumps(msgObj).encode())
 
     def recv(self):
         return str(self.server.recv(4096),'utf-8')
+
+    def close(self):
+        self.server.close()
 
 
 class Cmdline(cmd.Cmd):
@@ -102,15 +106,20 @@ class Cmdline(cmd.Cmd):
         print('help me')
 
     def do_exit(self, args):
-        exit(0)
+        msgObj = dict()
+        msgObj["action"] = "exit"
+        msgObj["value_type"] = "none"
+        self.client.send(msgObj)
 
     def help_exit(self):
         pass
 
     def do_connect(self, args: str):
         _args = args.strip()
-        port = int(_args)
-        self.client = SocketClient(port)
+        ip, port = _args.split(" ")
+        ip = ip.strip()
+        port = int(port.strip())
+        self.client = SocketClient(ip,port)
 
     def help_connect(self):
         print("connect <port>: Connect to config server")
@@ -152,7 +161,7 @@ class Cmdline(cmd.Cmd):
         self.client.send(msgObj)
         json_str = self.client.recv()
         parsed_json = json.loads(json_str)
-        with open("config_save.json", "w") as f:
+        with open(args.strip()+".json", "w") as f:
             f.write(parsed_json)
 
     def help_save_config(self):
